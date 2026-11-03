@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 620" role="img" aria-labelledby="title desc">
+  <title id="title">Implemented airfoil CNN and PointNet-style lift regressor</title>
+  <desc id="desc">The GPU CNN combines grayscale image features from two convolution blocks with a sixteen-feature angle embedding, then predicts lift through a 1024, 256, 1 head. The 3D model processes 1024 surface points with shared 3, 512, 512 layers, pools to 512 features, joins raw angle of attack, and predicts lift through 513, 128, 1 layers. The included CNN checkpoint has a different head.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#52647b"/></marker>
+    <style>
+      text { font-family: Arial, Helvetica, sans-serif; fill: #172b45; }
+      .heading { font-size: 25px; font-weight: 700; }
+      .label { font-size: 19px; font-weight: 700; }
+      .detail { font-size: 17px; fill: #425873; }
+      .small { font-size: 15px; fill: #425873; }
+      .box { fill: #fff; stroke: #bdcce0; stroke-width: 1.5; }
+      .blue { fill: #e8f1ff; stroke: #86abd6; stroke-width: 1.5; }
+      .green { fill: #e7f5ef; stroke: #82b5a2; stroke-width: 1.5; }
+      .line { fill: none; stroke: #52647b; stroke-width: 2; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect width="1200" height="620" rx="16" fill="#f7f9fc"/>
+  <text x="30" y="43" class="heading">2D · Airfoil image + angle → lift</text>
+  <text x="30" y="70" class="small">Checked-in GPU training variant: airfoilNN_nvidia.py</text>
+
+  <rect x="30" y="99" width="205" height="99" rx="9" class="blue"/>
+  <text x="47" y="129" class="label">Grayscale image</text>
+  <text x="47" y="157" class="detail">100 × 30 pixels</text>
+  <text x="47" y="182" class="small">width × height</text>
+  <rect x="270" y="99" width="320" height="99" rx="9" class="blue"/>
+  <text x="288" y="129" class="label">Two convolution blocks</text>
+  <text x="288" y="157" class="detail">1 → 32 → 64 channels</text>
+  <text x="288" y="182" class="small">3×3 conv · BN · ReLU · 2×2 pool</text>
+  <path d="M235 148H268" class="line"/>
+
+  <rect x="30" y="218" width="205" height="68" rx="9" class="box"/>
+  <text x="47" y="246" class="label">Angle of attack</text>
+  <text x="47" y="271" class="small">StandardScaler</text>
+  <rect x="270" y="218" width="320" height="68" rx="9" class="box"/>
+  <text x="288" y="247" class="label">Angle embedding · 1 → 16</text>
+  <text x="288" y="272" class="small">Linear layer + ReLU</text>
+  <path d="M235 252H268" class="line"/>
+
+  <rect x="635" y="144" width="180" height="100" rx="9" class="box"/>
+  <text x="653" y="180" class="label">Join features</text>
+  <text x="653" y="210" class="small">Flatten image + angle</text>
+  <path d="M590 148H610V170H633" class="line"/>
+  <path d="M590 252H610V222H633" class="line"/>
+  <rect x="855" y="144" width="315" height="100" rx="9" class="green"/>
+  <text x="873" y="175" class="label">Regression → one CL value</text>
+  <text x="873" y="205" class="detail">1024 → 256 → 1</text>
+  <text x="873" y="230" class="small">ReLU · dropout 0.2 after first linear</text>
+  <path d="M815 194H853" class="line"/>
+
+  <path d="M30 320H1170" stroke="#d4dfed"/>
+  <text x="30" y="360" class="heading">3D · Surface points + angle → lift</text>
+  <text x="30" y="387" class="small">PointNetLiftRegressor: 3DModel/model.py · no dropout or angle standardization in this implementation</text>
+  <rect x="30" y="415" width="205" height="95" rx="9" class="blue"/>
+  <text x="47" y="445" class="label">1,024 points</text>
+  <text x="47" y="473" class="detail">(x, y, z) on mesh</text>
+  <text x="47" y="496" class="small">Max-norm mesh scaling</text>
+  <rect x="270" y="415" width="245" height="95" rx="9" class="blue"/>
+  <text x="288" y="445" class="label">Shared point MLP</text>
+  <text x="288" y="473" class="detail">3 → 512 → 512</text>
+  <text x="288" y="496" class="small">ReLU after both layers</text>
+  <path d="M235 462H268" class="line"/>
+  <rect x="550" y="415" width="225" height="95" rx="9" class="box"/>
+  <text x="568" y="445" class="label">Global max pool</text>
+  <text x="568" y="473" class="detail">512 shape features</text>
+  <text x="568" y="496" class="small">Join AoA → 513 features</text>
+  <path d="M515 462H548" class="line"/>
+  <rect x="815" y="415" width="355" height="95" rx="9" class="green"/>
+  <text x="833" y="445" class="label">Regression → one CL value</text>
+  <text x="833" y="473" class="detail">513 → 128 → 1</text>
+  <text x="833" y="496" class="small">ReLU after the hidden layer</text>
+  <path d="M775 462H813" class="line"/>
+  <rect x="270" y="532" width="245" height="51" rx="9" class="box"/>
+  <text x="288" y="564" class="label">Raw AoA in degrees</text>
+  <path d="M515 557H660V512" class="line"/>
+  <text x="30" y="606" class="small">Code-based diagram · the saved 2D checkpoint instead has a 512 → 128 → 1 head; see docs/RESULTS.md.</text>
+</svg>
